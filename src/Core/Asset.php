@@ -3,6 +3,7 @@
 namespace WPDEPM\Core;
 
 use WPDEPM\Core\WordPressOptionsWrapper as Options;
+use WPDEPM\Core\WordPressHooksWrapper as Hooks;
 
 class Asset {
 
@@ -18,7 +19,7 @@ class Asset {
 
 	protected $version;
 
-	public static $type_map = [
+	public static $supports = [
 		'WP_Scripts' => [ 'js', 'scripts', 'script', 'WP_Scripts' ],
 		'WP_Styles' => [ 'css', 'styles', 'style', 'WP_Styles' ]
 	];
@@ -53,11 +54,11 @@ class Asset {
 	/**
 	 * Check if the asset is a specific type
 	 *
-	 * @param  string  $type
+	 * @param  string  $value
 	 * @return boolean|string
 	 */
 	public function is_type( string $value ) {
-		foreach ( self::$type_map as $type => $map ) {
+		foreach ( self::$supports as $type => $map ) {
 			if ( in_array( $value, $map ) && $type === $this->type() ) {
 				return $type;
 			}
@@ -86,7 +87,6 @@ class Asset {
 		$compare_path		= !empty( $compare_parts[ 'path' ] ) ? $compare_parts[ 'path' ] : null;
 		$compare_host		= !empty( $compare_parts[ 'host' ] ) ? $compare_parts[ 'host' ] : null;
 
-
 		// Link is either #link or /link
 		if ( $src_fragment || $src_path ) {
 			return $src_host ? strpos( $src_host, $compare_host ) === false : false;
@@ -105,7 +105,7 @@ class Asset {
 		$separator = DIRECTORY_SEPARATOR;
 
 		$parts = [
-			Options::get( 'cache_dir', 'cache' ),
+			Options::get( 'cache_dir', 'cache/wpdepm' ),
 			str_replace( '_', '-', sanitize_title( $this->type() ) ) // Make URL friendly
 		];
 
@@ -171,8 +171,8 @@ class Asset {
 		$url = content_url( $this->get_cache_dir() . $this->get_cache_file_name() );
 
 		if ( $with_version && $this->version() ) {
-			$version_key = (string)Option::get( 'version_key', 'ver' );
-			$version_key = sanitize_title( $version_key ) ?: 'ver';
+			$version_key = Options::get( 'version_key', 'ver' );
+			$version_key = sanitize_title( (string)$version_key ) ?: 'ver';
 			$url .= '?' . $version_key . '=' . $this->version();
 		}
 
@@ -191,7 +191,11 @@ class Asset {
 			$this->$key = $value;
 		}
 
-		return $this->$key;
+		$value = $this->$key;
+		$value = Hooks::apply_filters( 'asset/property', $value, $key, $this );
+		$value = Hooks::apply_filters( 'asset/property/' . $key, $value, $this );
+
+		return $value;
 	}
 
 	/**
@@ -218,7 +222,13 @@ class Asset {
 	 * @return string
 	 */
 	public function source( ?string $value = null ) {
-		return $this->set_get( 'source', $value );
+		$src = $this->set_get( 'source', $value );
+
+		if ( preg_match( '/^\/\//', $src ) ) {
+			$src = 'https:' . $src;
+		}
+
+		return $src;
 	}
 
 	/**
@@ -249,6 +259,15 @@ class Asset {
 	}
 
 	/**
+	 * Quickly check if the cache file exists on the local disk
+	 *
+	 * @return boolean
+	 */
+	public function cache_file_exists() {
+		return @file_exists( $this->get_cache_file_path() );
+	}
+
+	/**
 	 * Get the file contents from cache path
 	 *
 	 * @return ?string
@@ -264,7 +283,7 @@ class Asset {
 	 * @return boolean|null  True for expired file, or null if file does not exist
 	 */
 	public function cache_expired() {
-		if ( @file_exists( $this->get_cache_file_path() ) ) {
+		if ( $this->cache_file_exists() ) {
 			$expiry_operator	= strtoupper( (string)Options::get( 'expiry_operator', 'hour' ) );
 			$expiry_value		= (int)Options::get( 'expiry_value', 12 );
 			$expiry_compare		= DAY_IN_SECONDS; // Default to a day lifespan

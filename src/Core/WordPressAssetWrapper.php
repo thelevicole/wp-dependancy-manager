@@ -36,7 +36,7 @@ class WordPressAssetWrapper {
 		self::get_dependants( self::$assets, $wp_styles );
 	}
 
-	public static function get_assets( ?string $type = null, bool $refresh = true ): array {
+	public static function get( ?string $type = null, bool $refresh = true ): array {
 
 		if ( $refresh ) {
 			self::refresh_assets();
@@ -51,8 +51,8 @@ class WordPressAssetWrapper {
 		return self::$assets;
 	}
 
-	public static function find_assets( string $type, string $handle, string $source, bool $refresh = true  ) {
-		return array_filter( self::get_assets( $type, $refresh ), function( $asset ) use ( $type, $handle, $source ) {
+	public static function find( string $type, ?string $handle = null, ?string $source = null, bool $refresh = true  ) {
+		return array_filter( self::get( $type, $refresh ), function( $asset ) use ( $type, $handle, $source ) {
 			$difference = array_diff( [
 				'handle' => $handle,
 				'source' => $source
@@ -61,12 +61,21 @@ class WordPressAssetWrapper {
 				'source' => $asset->source()
 			] );
 
-			return empty( $difference );
+			if ( $handle && $source ) {
+				return $asset->handle() === $handle && $asset->source() === $source;
+			} else if ( $handle && !$source ) {
+				return $asset->handle() === $handle;
+			} else if ( !$handle && $source ) {
+				return $asset->source() === $source;
+			}
+
+
+			return false;
 		} );
 	}
 
-	public static function first_asset( string $type, string $handle, string $source ) {
-		$found = array_values( self::find_assets( $type, $handle, $source ) );
+	public static function first( string $type, ?string $handle = null, ?string $source = null ) {
+		$found = array_values( self::find( $type, $handle, $source ) );
 
 		return $found ? array_shift( $found ) : null;
 	}
