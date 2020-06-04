@@ -12,7 +12,7 @@ class WordPressHooksWrapper {
 	}
 
 	/**
-	 * Run action with YoastExtended/ prefixed
+	 * Run action with prefix
 	 *
 	 * @link https://developer.wordpress.org/reference/functions/do_action/
 	 *
@@ -26,7 +26,7 @@ class WordPressHooksWrapper {
 	}
 
 	/**
-	 * Add action with YoastExtended/ prefixed
+	 * Add action with prefix
 	 *
 	 * @link	https://developer.wordpress.org/reference/functions/add_action/
 	 *
@@ -41,7 +41,7 @@ class WordPressHooksWrapper {
 	}
 
 	/**
-	 * Add filter with YoastExtended/ prefixed
+	 * Add filter with prefix
 	 *
 	 * @link https://developer.wordpress.org/reference/functions/apply_filters/
 	 *
@@ -58,7 +58,7 @@ class WordPressHooksWrapper {
 	}
 
 	/**
-	 * Add filter with YoastExtended/ prefixed
+	 * Add filter with prefix
 	 *
 	 * @link	https://developer.wordpress.org/reference/functions/add_filter/
 	 *
