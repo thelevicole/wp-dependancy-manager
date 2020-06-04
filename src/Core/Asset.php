@@ -167,8 +167,16 @@ class Asset {
 	 *
 	 * @return string
 	 */
-	public function get_cache_file_url() {
-		return content_url( $this->get_cache_dir() . $this->get_cache_file_name() );
+	public function get_cache_file_url( bool $with_version = false ) {
+		$url = content_url( $this->get_cache_dir() . $this->get_cache_file_name() );
+
+		if ( $with_version && $this->version() ) {
+			$version_key = (string)Option::get( 'version_key', 'ver' );
+			$version_key = sanitize_title( $version_key ) ?: 'ver';
+			$url .= '?' . $version_key . '=' . $this->version();
+		}
+
+		return $url;
 	}
 
 	/**

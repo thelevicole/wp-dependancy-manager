@@ -46,23 +46,25 @@ class AssetHandler {
 	}
 
 	/**
+	 * Get asset from cache, and replace html
 	 *
+	 * @return string
 	 */
-	public function replace_scripts( string $tag, string $handle, string $src ) {
-		$found = Assets::first_asset( 'script', $handle, $src );
+	public function replace_handler( string $type, string $tag, string $handle, string $src ) {
+		$found = Assets::first_asset( $type, $handle, $src );
 
 		if ( $found ) {
 
 			// Get new cache on load if expired
 			$found->cache_check();
 
-			// Print scripts inline
+			// Print contents inline
 			if ( Options::get( 'inline', false ) ) {
 				if ( $contents = $found->contents() ) {
-					$tag = '<script>' . $contents . '</script>';
+					$tag = '<' . $type . '>' . $contents . '</' . $type . '>';
 				}
 			} else {
-				$tag = str_replace( $src, $found->get_cache_file_url(), $tag );
+				$tag = str_replace( $src, $found->get_cache_file_url( true ), $tag );
 			}
 		}
 
@@ -72,18 +74,15 @@ class AssetHandler {
 	/**
 	 *
 	 */
+	public function replace_scripts( string $tag, string $handle, string $src ) {
+		return $this->replace_handler( 'script', $tag, $handle, $src );
+	}
+
+	/**
+	 *
+	 */
 	public function replace_styles( string $tag, string $handle, string $src ) {
-		$found = Assets::first_asset( 'style', $handle, $src );
-
-		if ( $found ) {
-			if ( Options::get( 'inline', true ) ) {
-				$tag = '<style>' . $found->contents() . '</style>';
-			} else {
-				// Todo add link href tag
-			}
-		}
-
-		return $tag;
+		return $this->replace_handler( 'style', $tag, $handle, $src );
 	}
 
 }
