@@ -68,7 +68,7 @@ class WordPressAssetWrapper {
 	public static function first_asset( string $type, string $handle, string $source ) {
 		$found = self::find_assets( $type, $handle, $source );
 
-		return $found ? array_pop( $found ) : null;
+		return $found ? array_shift( array_values( $found ) ) : null;
 	}
 
 
