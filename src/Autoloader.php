@@ -12,12 +12,23 @@ class Autoloader {
 
 	public $supports = [ 'psr-4', 'psr-0', 'files' ];
 
+	/**
+	 * Class constructor
+	 * 
+	 * @param  string  $dir  This is the project base directory
+	 */
 	function __construct( string $dir ) {
 		$this->dir = $dir;
 		$this->currentDir = $dir;
 		$this->seperator = DIRECTORY_SEPARATOR;
 	}
 
+	/**
+	 * Tidy path, prefix with base path
+	 * 
+	 * @param  ?string  $dir
+	 * @return string
+	 */
 	public function parseDir( ?string $dir ) {
 		if ( !empty( $this->dir ) ) {
 			$dir = preg_replace( '/^' . preg_quote( $this->dir, '/' ) . '/', '', $dir );
@@ -27,6 +38,12 @@ class Autoloader {
 		return $dir;
 	}
 
+	/**
+	 * Load from an array
+	 * 
+	 * @param  array  $parts  PHP defined array in the same structure as composer
+	 * @param  string $type   Accepts psr-4 | psr-0 | files
+	 */
 	public function loadArray( array $parts, string $type, ?string $dir = null ) {
 		$this->currentDir = $this->parseDir( $dir );
 		return $this->include( $parts, $type );
@@ -34,6 +51,9 @@ class Autoloader {
 
 	/**
 	 * Load from composer file
+	 * 
+	 * @param  ?string  $dir  Specific path for composer file
+	 * @return voide
 	 */
 	public function loadComposer( ?string $dir = null ) {
 		$composer = json_decode( file_get_contents( $this->parseDir( $dir ) . '/composer.json' ), true );
@@ -77,6 +97,12 @@ class Autoloader {
 		return $status;
 	}
 
+	/**
+	 * Load specific file paths
+	 * 
+	 * @param  array  $files  Array of file paths
+	 * @return void
+	 */
 	public function includeFiles( array $files ) {
 		foreach( $files as $file ) {
 			$fullpath = rtrim( $this->dir, $this->seperator ) . $this->seperator . ltrim( $file, $this->seperator );
@@ -87,11 +113,18 @@ class Autoloader {
 		}
 	}
 
-	public function includePSR( $namespaces, bool $psr4 ) {
+	/**
+	 * Load from class name and path
+	 * 
+	 * @param  array   $namespaces
+	 * @param  boolean $psr4        True use PSR-4 standard, false for PSR-0
+	 * @return void
+	 */
+	public function includePSR( array $namespaces, bool $psr4 ) {
 		$dir = $this->currentDir;
 		
 		// Foreach namespace specified in the composer, load the given classes
-		foreach( $namespaces as $namespace => $classpaths ) {
+		foreach ( $namespaces as $namespace => $classpaths ) {
 			$classpaths = (array)$classpaths;
 
 			spl_autoload_register( function( $classname ) use ( $namespace, $classpaths, $dir, $psr4 ) {

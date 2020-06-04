@@ -2,6 +2,8 @@
 
 namespace WPDEPM\Core;
 
+use WPDEPM\Core\WordPressOptionsWrapper as Options;
+
 class Asset {
 
 	protected $args = [];
@@ -16,6 +18,11 @@ class Asset {
 
 	protected $version;
 
+	public static $type_map = [
+		'WP_Scripts' => [ 'js', 'scripts', 'script', 'WP_Scripts' ],
+		'WP_Styles' => [ 'css', 'styles', 'style', 'WP_Styles' ]
+	];
+
 	public function __construct( string $type, string $handle, string $source, ?string $version = null, $args = [], $extras = [] ) {
 
 		$this->type( $type );
@@ -28,8 +35,65 @@ class Asset {
 	}
 
 	/**
+	 * Check if the asset is a specific type
+	 *
+	 * @param  string  $type
+	 * @return boolean|string
+	 */
+	public function is_type( string $value ) {
+		foreach ( self::$type_map as $type => $map ) {
+			if ( in_array( $value, $map ) && $type === $this->type() ) {
+				return $type;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Build a relative cache dir path (rel to WP_CONTENT)
+	 *
+	 * @return string
+	 */
+	public function get_cache_dir() {
+
+		$separator = DIRECTORY_SEPARATOR;
+
+		$parts = [
+			Options::get( 'cache_dir', 'cache' ),
+			str_replace( '_', '-', sanitize_title( $this->type() ) ) // Make URL friendly
+		];
+
+		$parts = array_map( function( $part ) {
+			return trim( $part, DIRECTORY_SEPARATOR );
+		}, $parts );
+
+		$parts = array_filter( $parts );
+
+		return $separator . implode( $separator, $parts ) . $separator;
+	}
+
+	/**
+	 * Build a absolute cache path (rel to host root)
+	 *
+	 * @return string
+	 */
+	public function get_cache_path() {
+		return rtrim( WP_CONTENT_DIR, DIRECTORY_SEPARATOR ) . $this->get_cache_dir();
+	}
+
+	/**
+	 * Get the public cache url
+	 *
+	 * @return string
+	 */
+	public function get_cache_url() {
+		return content_url( $this->get_cache_dir() );
+	}
+
+	/**
 	 * Conditional property setter/getter
-	 * 
+	 *
 	 * @param  string  $key
 	 * @param  mixed   $value
 	 * @return mixed
@@ -44,7 +108,7 @@ class Asset {
 
 	/**
 	 * Get or set `type` property
-	 * 
+	 *
 	 * @return string
 	 */
 	public function type( ?string $value = null ) {
@@ -53,7 +117,7 @@ class Asset {
 
 	/**
 	 * Get or set `handle` property
-	 * 
+	 *
 	 * @return string
 	 */
 	public function handle( ?string $value = null ) {
@@ -62,7 +126,7 @@ class Asset {
 
 	/**
 	 * Get or set `source` property
-	 * 
+	 *
 	 * @return string
 	 */
 	public function source( ?string $value = null ) {
@@ -71,7 +135,7 @@ class Asset {
 
 	/**
 	 * Get or set `version` property
-	 * 
+	 *
 	 * @return string
 	 */
 	public function version( ?string $value = null ) {
@@ -80,7 +144,7 @@ class Asset {
 
 	/**
 	 * Get or set `args` property
-	 * 
+	 *
 	 * @return string
 	 */
 	public function args( $value = null ) {
@@ -89,7 +153,7 @@ class Asset {
 
 	/**
 	 * Get or set `extras` property
-	 * 
+	 *
 	 * @return string
 	 */
 	public function extras( $value = null ) {
@@ -98,7 +162,7 @@ class Asset {
 
 	/**
 	 * Check if asset source is external
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public function is_external() {
@@ -127,7 +191,7 @@ class Asset {
 
 	/**
 	 * Create a hash string from properties
-	 * 
+	 *
 	 * @return string
 	 */
 	public function hash() {
@@ -143,7 +207,7 @@ class Asset {
 
 	/**
 	 * Get the file contents from source URL
-	 * 
+	 *
 	 * @return ?string
 	 */
 	public function source_contents() {

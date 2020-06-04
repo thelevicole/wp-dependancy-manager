@@ -23,7 +23,7 @@ class AssetHandler {
 
 	/**
 	 * Build and return an array of enqued assets
-	 * 
+	 *
 	 * @return array
 	 */
 	public function get_assets() {
@@ -36,7 +36,7 @@ class AssetHandler {
 
 	/**
 	 * Return an array of external enqued assets
-	 * 
+	 *
 	 * @return array
 	 */
 	public function get_external_assets() {
@@ -46,16 +46,18 @@ class AssetHandler {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public function replace_scripts( string $tag, string $handle, string $src ) {
 		$found = Assets::first_asset( 'script', $handle, $src );
 
 		if ( $found ) {
 			if ( Options::get( 'inline', true ) ) {
-				$tag = '<script>' . $found->contents() . '</script>';
+				if ( $contents = $found->contents() ) {
+					$tag = '<script>' . $contents . '</script>';
+				}
 			} else {
-				// Todo add script src tag
+				$tag = str_replace( $src, $found->cache_file(), $tag );
 			}
 		}
 
@@ -63,7 +65,7 @@ class AssetHandler {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public function replace_styles( string $tag, string $handle, string $src ) {
 		$found = Assets::first_asset( 'style', $handle, $src );
