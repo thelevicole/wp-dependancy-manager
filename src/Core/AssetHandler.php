@@ -52,12 +52,17 @@ class AssetHandler {
 		$found = Assets::first_asset( 'script', $handle, $src );
 
 		if ( $found ) {
-			if ( Options::get( 'inline', true ) ) {
+
+			// Get new cache on load if expired
+			$found->cache_check();
+
+			// Print scripts inline
+			if ( Options::get( 'inline', false ) ) {
 				if ( $contents = $found->contents() ) {
 					$tag = '<script>' . $contents . '</script>';
 				}
 			} else {
-				$tag = str_replace( $src, $found->cache_file(), $tag );
+				$tag = str_replace( $src, $found->get_cache_file_url(), $tag );
 			}
 		}
 

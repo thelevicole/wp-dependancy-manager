@@ -143,6 +143,13 @@ class Asset {
 	 */
 	public function get_cache_file_name() {
 		$ext = pathinfo( parse_url( $this->source(), PHP_URL_PATH ), PATHINFO_EXTENSION );
+
+		if ( $this->is_type( 'js' ) ) {
+			$ext = 'js';
+		} elseif ( $this->is_type( 'css' ) ) {
+			$ext = 'css';
+		}
+
 		return $this->hash() . '.' . $ext;
 	}
 
@@ -238,9 +245,66 @@ class Asset {
 	 *
 	 * @return ?string
 	 */
-	public function cache_contents() {
+	public function get_cache_contents() {
 		$contents = @file_get_contents( $this->get_cache_file_path() );
 		return $contents !== false ? $contents : null;
+	}
+
+	/**
+	 * Check if current cache file has expired
+	 *
+	 * @return boolean|null  True for expired file, or null if file does not exist
+	 */
+	public function cache_expired() {
+		if ( @file_exists( $this->get_cache_file_path() ) ) {
+			$expiry_operator	= strtoupper( (string)Options::get( 'expiry_operator', 'hour' ) );
+			$expiry_value		= (int)Options::get( 'expiry_value', 12 );
+			$expiry_compare		= DAY_IN_SECONDS; // Default to a day lifespan
+
+			if ( defined( $expiry_operator . '_IN_SECONDS' ) ) {
+				$expiry_compare = $expiry_value * constant( $expiry_operator . '_IN_SECONDS' );
+			}
+
+			$filetime = filemtime( $this->get_cache_file_path() );
+
+			return ( time() - $filetime ) > $expiry_compare;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get and store the cache contents on the local disk
+	 *
+	 * @return boolean  True on successfull storage
+	 */
+	public function download_cache_contents() {
+		if ( $contents = $this->get_source_contents() ) {
+
+			/**
+			 * Recursively create directory based on full path
+			 *
+			 * @link https://developer.wordpress.org/reference/functions/wp_mkdir_p/
+			 */
+			wp_mkdir_p( $this->get_cache_dir_path() );
+
+			$success = @file_put_contents( $this->get_cache_file_path(), $contents );
+
+			return $success !== false;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if cache is expired, download new version
+	 *
+	 * @return void
+	 */
+	public function cache_check() {
+		if ( in_array( $this->cache_expired(), [ null, true ] ) ) {
+			$this->download_cache_contents();
+		}
 	}
 
 	/**
@@ -248,7 +312,7 @@ class Asset {
 	 *
 	 * @return ?string
 	 */
-	public function source_contents() {
+	public function get_source_contents() {
 		$contents = @file_get_contents( $this->source() );
 		return $contents !== false ? $contents : null;
 	}
@@ -259,11 +323,12 @@ class Asset {
 	 * @return ?string
 	 */
 	public function contents() {
-		return $this->cache_contents() ?: $this->source_contents();
+		return $this->get_cache_contents() ?: $this->get_source_contents();
 	}
 
 
 }
+
 
 
 
