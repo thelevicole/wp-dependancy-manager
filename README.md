@@ -71,7 +71,7 @@ add_filter( 'wpdepm/asset/property/source', function( mixed $value, WPDEPM\Core\
 }, 10, 2 );
 ```
 
-## `asset/replace`
+## `wpdepm/asset/replace`
 Filter each tag output when replacing on the frontend regardless of output type.
 ```php
 add_filter( 'wpdepm/asset/replace', function( string $tag, WPDEPM\Core\Asset $asset ) {
@@ -80,7 +80,7 @@ add_filter( 'wpdepm/asset/replace', function( string $tag, WPDEPM\Core\Asset $as
 }, 10, 2 );
 ```
 
-## `asset/replace/source`
+## `wpdepm/asset/replace/source`
 Apply this filter to the output tag when cached but not inline.
 ```php
 add_filter( 'wpdepm/asset/replace/inline', function( string $tag, WPDEPM\Core\Asset $asset ) {
@@ -89,7 +89,7 @@ add_filter( 'wpdepm/asset/replace/inline', function( string $tag, WPDEPM\Core\As
 }, 10, 2 );
 ```
 
-## `asset/replace/inline`
+## `wpdepm/asset/replace/inline`
 Apply this filter to the output tag when cached but and contents are printed inline.
 ```php
 add_filter( 'wpdepm/asset/replace/inline', function( string $tag, WPDEPM\Core\Asset $asset ) {
