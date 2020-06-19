@@ -2,7 +2,7 @@
 
 namespace WPDEPM\Core;
 
-class WordPressOptionsWrapper {
+class WordPressOptions {
 
 	public static $prefix = 'wpdepm_';
 

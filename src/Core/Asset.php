@@ -2,8 +2,8 @@
 
 namespace WPDEPM\Core;
 
-use WPDEPM\Core\WordPressOptionsWrapper as Options;
-use WPDEPM\Core\WordPressHooksWrapper as Hooks;
+use WPDEPM\Wrappers\WordPressOptions as Options;
+use WPDEPM\Wrappers\WordPressHooks as Hooks;
 
 class Asset {
 

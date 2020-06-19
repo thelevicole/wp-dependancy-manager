@@ -2,9 +2,9 @@
 
 namespace WPDEPM\Core;
 
-use WPDEPM\Core\WordPressAssetWrapper as Assets;
-use WPDEPM\Core\WordPressOptionsWrapper as Options;
-use WPDEPM\Core\WordPressHooksWrapper as Hooks;
+use WPDEPM\Wrappers\WordPressDependencies as Dependencies;
+use WPDEPM\Wrappers\WordPressOptions as Options;
+use WPDEPM\Wrappers\WordPressHooks as Hooks;
 
 class AssetHandler {
 
@@ -23,7 +23,7 @@ class AssetHandler {
 	 * @return string
 	 */
 	public function replace_handler( string $type, string $tag, string $handle, string $src ) {
-		$found = Assets::first( $type, $handle );
+		$found = Dependencies::first( $type, $handle );
 
 		if ( $found ) {
 

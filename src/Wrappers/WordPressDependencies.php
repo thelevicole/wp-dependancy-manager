@@ -4,7 +4,7 @@ namespace WPDEPM\Core;
 
 use WPDEPM\Core\Asset;
 
-class WordPressAssetWrapper {
+class WordPressDependencies {
 
 	public static $assets = [];
 

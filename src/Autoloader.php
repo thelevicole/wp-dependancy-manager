@@ -3,7 +3,7 @@
 namespace WPDEPM;
 
 class Autoloader {
-	
+
 	public $dir;
 
 	public $currentDir;
@@ -14,7 +14,7 @@ class Autoloader {
 
 	/**
 	 * Class constructor
-	 * 
+	 *
 	 * @param  string  $dir  This is the project base directory
 	 */
 	function __construct( string $dir ) {
@@ -25,7 +25,7 @@ class Autoloader {
 
 	/**
 	 * Tidy path, prefix with base path
-	 * 
+	 *
 	 * @param  ?string  $dir
 	 * @return string
 	 */
@@ -40,7 +40,7 @@ class Autoloader {
 
 	/**
 	 * Load from an array
-	 * 
+	 *
 	 * @param  array  $parts  PHP defined array in the same structure as composer
 	 * @param  string $type   Accepts psr-4 | psr-0 | files
 	 */
@@ -51,7 +51,7 @@ class Autoloader {
 
 	/**
 	 * Load from composer file
-	 * 
+	 *
 	 * @param  ?string  $dir  Specific path for composer file
 	 * @return voide
 	 */
@@ -66,7 +66,7 @@ class Autoloader {
 
 	/**
 	 * Handle loading by array and type
-	 * 
+	 *
 	 * @param  array  $items
 	 * @param  string $type
 	 * @return boolean
@@ -87,7 +87,7 @@ class Autoloader {
 					$status = true;
 					break;
 
-				case 'psr-0':
+				case 'files':
 					$this->includeFiles( $items );
 					$status = true;
 					break;
@@ -99,14 +99,14 @@ class Autoloader {
 
 	/**
 	 * Load specific file paths
-	 * 
+	 *
 	 * @param  array  $files  Array of file paths
 	 * @return void
 	 */
 	public function includeFiles( array $files ) {
 		foreach( $files as $file ) {
 			$fullpath = rtrim( $this->dir, $this->seperator ) . $this->seperator . ltrim( $file, $this->seperator );
-			
+
 			if ( file_exists( $fullpath ) ) {
 				include_once $fullpath;
 			}
@@ -115,14 +115,14 @@ class Autoloader {
 
 	/**
 	 * Load from class name and path
-	 * 
+	 *
 	 * @param  array   $namespaces
 	 * @param  boolean $psr4        True use PSR-4 standard, false for PSR-0
 	 * @return void
 	 */
 	public function includePSR( array $namespaces, bool $psr4 ) {
 		$dir = $this->currentDir;
-		
+
 		// Foreach namespace specified in the composer, load the given classes
 		foreach ( $namespaces as $namespace => $classpaths ) {
 			$classpaths = (array)$classpaths;
@@ -130,21 +130,21 @@ class Autoloader {
 			spl_autoload_register( function( $classname ) use ( $namespace, $classpaths, $dir, $psr4 ) {
 				// Check if the namespace matches the class we are looking for
 				if ( preg_match( '/^' . preg_quote( $namespace ) . '/', $classname ) ) {
-					
+
 					// Remove the namespace from the file path since it's psr4
 					if ( $psr4 ) {
 						$classname = str_replace( $namespace, '', $classname );
 					}
 
 					$filename = preg_replace( '/\\\\/', '/', $classname ) . '.php';
-					
+
 					foreach ( $classpaths as $classpath ) {
 						$fullpath = implode( $this->seperator, [
 							rtrim( $dir, $this->seperator ),
 							trim( $classpath, $this->seperator ),
 							ltrim( $filename, $this->seperator )
 						] );
-						
+
 						if ( file_exists( $fullpath ) ) {
 							include_once $fullpath;
 						}

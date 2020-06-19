@@ -38,7 +38,7 @@ $autoloader = new \WPDEPM\Autoloader( WPDEPM_PATH );
 /**
  * Load shared classes
  */
-$autoloader->loadArray( [ 'WPDEPM\\Core' => 'src/Core' ], 'psr-4' );
+$autoloader->loadArray( [ 'WPDEPM\\' => 'src' ], 'psr-4' );
 
 $hanlder = new WPDEPM\Core\AssetHandler;
 

@@ -2,7 +2,7 @@
 
 namespace WPDEPM\Core;
 
-class WordPressHooksWrapper {
+class WordPressHooksHooks {
 
 	public static $prefix = 'wpdepm/';
 
